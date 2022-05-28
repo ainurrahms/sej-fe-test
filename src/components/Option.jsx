@@ -32,6 +32,12 @@ export default function Option(props) {
   let optValue = list?.map((val) => ({
     value: val.name,
   }))
+  
+
+  const onSelect = (value) => {
+    const findWords = list.find(e => e.name === value);
+    props.onCategoryChanged(findWords.id)
+  }
 
 
   if (!loading){
@@ -50,6 +56,7 @@ export default function Option(props) {
           marginBottom: '1%'
         }}
         options={optValue}
+        onSelect={onSelect}
         filterOption={(inputValue, option) =>
           option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
         }

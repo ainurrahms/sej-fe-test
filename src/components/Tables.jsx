@@ -2,31 +2,31 @@ import React, { useState, useEffect }  from "react";
 import { Space, Table,Button, Tag, Modal  } from 'antd';
 import Option from "./Option";
 
-
-
-
 export default function Tables() {
   const [loaded, setLoaded] = useState(false)
   const [list, setList] = useState([]);
   const [size, setSize] = useState(10);
 
-  const fetchData = async (page, size) => {
+  const fetchData = async (page, size, categoryId) => {
     setLoaded(true);
-    fetch(`fee-assessment-books?categoryId=1&page=${page}&size=${size}`)
-      .then(res => res.json())
+    fetch(`fee-assessment-books?categoryId=${categoryId}&page=${page}&size=${size}`)
+      .then(res => {
+        if(res.status === 404){
+          setLoaded(false)
+          setList([])
+        }
+        return res.json()
+      })
       .then(
         (result) => {
           setLoaded(false);
           setList(result);
-        },
-        (error) => {
-          setLoaded(true);
         }
       )
   }
 
   useEffect(() => {
-    fetchData(1, size);
+    fetchData(1, size, 1);
   }, [size])
 
   const handlePerRowsChange = async (newPerPage) => {
@@ -34,15 +34,17 @@ export default function Tables() {
   }
 
   const onChange = (e) => {
-    console.log(e,"onchange")
-    // if (list.length === 0){
-    //   setList(list)
-    // }else{
-    // const filteredData = list?.filter(entry =>
-    //   entry.title.toLowerCase().startsWith(e.toLowerCase())
-    // );
-    //   setList(filteredData);
-    // }
+    const filteredData = list?.filter(entry =>
+      entry.title.toLowerCase().startsWith(e.toLowerCase())
+    );
+    setList(filteredData);
+    if(e.length === 0){
+      fetchData(1, size, 1);
+    }
+  }
+
+  const onCategoryChanged = (value) => {
+    fetchData(1, size, value);
   }
 
   const SaveBookmarks = (val) => {
@@ -63,15 +65,17 @@ export default function Tables() {
     },
     {
       title: 'Cover',
+      dataIndex: 'cover',
       key: 'cover',
-      render: (data) => (
+      render: (_,data) => (
         <img src={data?.cover_url} alt="gambar" style={{width:'50px'}}/>
       ),
     },
     {
       title: 'Category',
+      dataIndex: 'category_id',
       key: 'category_id',
-      render: (data) => (
+      render: (_,data) => (
         <>
           {data?.category_id === 1 ? (
             <Tag color="red" style={{textTransform:'uppercase'}}>Happiness & Mindfulness</Tag>
@@ -91,6 +95,7 @@ export default function Tables() {
     },
     {
       title: 'Action',
+      dataIndex:'action',
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
@@ -99,16 +104,18 @@ export default function Tables() {
       ),
     },
   ];
-  
 
-  
+  let data = list?.map((val) => ({
+    key: val.id,
+    ...val
+  }))
+
     return(
       <>
-        <Option onChange={(e) => onChange(e)}/>
+        <Option onChange={onChange} onCategoryChanged={onCategoryChanged}/>
         <Table 
-          pagination 
           columns={columns} 
-          dataSource={loaded ? [] : list} 
+          dataSource={data} 
           onChange={handlePerRowsChange}
           loading={loaded}
         />
