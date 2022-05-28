@@ -29,9 +29,10 @@ export default function Option(props) {
       });
   }, []);
 
-  let optValue = list?.map(val => ({
-    value: val.name
+  let optValue = list?.map((val) => ({
+    value: val.name,
   }))
+
 
   if (!loading){
     return (
@@ -54,7 +55,7 @@ export default function Option(props) {
         }
         onChange={props.onChange}
       >
-        <Input.Search size="large" placeholder="Search Book by Category" />
+        <Input.Search size="large" placeholder="Search Book by Category" allowClear/>
       </AutoComplete>
       </>
     );
